@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:single_chat/view/login_screen.dart';
 
-void main() {
-  runApp(MyApp());
-}
+import 'package:single_chat/view/auth_screen.dart';
+
+void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
