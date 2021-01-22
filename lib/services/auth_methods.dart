@@ -2,7 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import '../models/user_model.dart';
 
 class AuthMethods {
-  FirebaseAuth _auth = FirebaseAuth.instanceFor();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
   AppUser _authUser(User user) {
     if (user != null) {

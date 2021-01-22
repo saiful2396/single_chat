@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 import '../services/auth_methods.dart';
+import '../services/database.dart';
 import '../models/http_exception.dart';
+import'../view/chat_room_screen.dart';
 
 enum AuthMode { SignUp, Login }
 
@@ -74,6 +76,7 @@ class _AuthCardState extends State<AuthCard>
   final GlobalKey<FormState> _formKey = GlobalKey();
   AuthMode _authMode = AuthMode.Login;
   AuthMethods authMethod = AuthMethods();
+  DataBaseMethods _dataBase = DataBaseMethods();
   Map<String, String> _authData = {
     'email': '',
     'password': '',
@@ -82,7 +85,7 @@ class _AuthCardState extends State<AuthCard>
   };
   var _isLoading = false;
   final _passwordController = TextEditingController();
-  final __emailController = TextEditingController();
+  final _emailController = TextEditingController();
   final _userNameController = TextEditingController();
   AnimationController _animationController;
   Animation<double> _opacityAnimation;
@@ -138,46 +141,63 @@ class _AuthCardState extends State<AuthCard>
     setState(() {
       _isLoading = true;
     });
-    _authMode == AuthMode.SignUp
-        ? authMethod.signUpWithEmailAndPassword(
-            __emailController.text,
-            _passwordController.text,
-          )
-        : authMethod.signInWithEmailAndPassword(
-            __emailController.text,
-            _passwordController.text,
+    // _authMode == AuthMode.SignUp
+    //     ? authMethod.signUpWithEmailAndPassword(
+    //         __emailController.text,
+    //         _passwordController.text,
+    //       )
+    //     : authMethod.signInWithEmailAndPassword(
+    //         __emailController.text,
+    //         _passwordController.text,
+    //       );
+    try {
+      if (_authMode == AuthMode.SignUp) {
+        // Provider.of<Auth>(context, listen: false)
+        //     .signIn(_authData['email'], _authData['password']);
+        authMethod.signUpWithEmailAndPassword(
+          _authData['email'],
+          _authData['userName'],
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (ctx) => ChatRoom()),
+        );
+      } else {
+        // Provider.of<Auth>(context, listen: false)
+        //     .signUp(_authData['email'], _authData['password']);
+        authMethod.signInWithEmailAndPassword(
+          _authData['email'],
+         _authData['userName'],
+        ).then((value) {
+          _dataBase.uploadUserInfo(_authData);
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (ctx) => ChatRoom()),
           );
-    // try {
-    //   if (_authMode == AuthMode.SignUp) {
-    //     // Provider.of<Auth>(context, listen: false)
-    //     //     .signIn(_authData['email'], _authData['password']);
-    //     authMethod.signUpWithEmailAndPassword(
-    //       __emailController.text, _passwordController.text,);
-    //   } else {
-    //     // Provider.of<Auth>(context, listen: false)
-    //     //     .signUp(_authData['email'], _authData['password']);
-    //   }
-    // } on HttpException catch (error) {
-    //   var errorMessage = 'Authentication failed';
-    //   if (error.toString().contains('EMAIL_EXISTS')) {
-    //     errorMessage = 'Email already exists';
-    //   } else if (error.toString().contains('INVALID_EMAIL')) {
-    //     errorMessage = 'Invalid email';
-    //   } else if (error.toString().contains('WEAK_PASSWORD')) {
-    //     errorMessage = 'Weak password';
-    //   } else if (error.toString().contains('EMAIL_NOT_FOUND')) {
-    //     errorMessage = 'Email not found';
-    //   } else if (error.toString().contains('INVALID_PASSWORD')) {
-    //     errorMessage = 'Invalid password';
-    //   }
-    //   _showErrorDialog(errorMessage);
-    // } catch (error) {
-    //   const errorMessage = 'Could not authenticate you. Please try again later';
-    //   _showErrorDialog(errorMessage);
-    // }
-    // setState(() {
-    //   _isLoading = false;
-    // });
+        });
+
+      }
+    } on HttpException catch (error) {
+      var errorMessage = 'Authentication failed';
+      if (error.toString().contains('EMAIL_EXISTS')) {
+        errorMessage = 'Email already exists';
+      } else if (error.toString().contains('INVALID_EMAIL')) {
+        errorMessage = 'Invalid email';
+      } else if (error.toString().contains('WEAK_PASSWORD')) {
+        errorMessage = 'Weak password';
+      } else if (error.toString().contains('EMAIL_NOT_FOUND')) {
+        errorMessage = 'Email not found';
+      } else if (error.toString().contains('INVALID_PASSWORD')) {
+        errorMessage = 'Invalid password';
+      }
+      _showErrorDialog(errorMessage);
+    } catch (error) {
+      const errorMessage = 'Could not authenticate you. Please try again later';
+      _showErrorDialog(errorMessage);
+    }
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   void _switchAuthMode() {
@@ -264,6 +284,7 @@ class _AuthCardState extends State<AuthCard>
                         ),
                       ),
                       keyboardType: TextInputType.emailAddress,
+                      controller: _emailController,
                       validator: (value) {
                         return RegExp(
                                     r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
