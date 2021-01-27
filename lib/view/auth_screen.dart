@@ -1,9 +1,11 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:single_chat/helper/helper_function.dart';
 
 import '../services/auth_methods.dart';
 import '../services/database.dart';
 import '../models/http_exception.dart';
-import'../view/chat_room_screen.dart';
+import '../view/chat_room_screen.dart';
 
 enum AuthMode { SignUp, Login }
 
@@ -74,21 +76,23 @@ class AuthCard extends StatefulWidget {
 class _AuthCardState extends State<AuthCard>
     with SingleTickerProviderStateMixin {
   final GlobalKey<FormState> _formKey = GlobalKey();
+
   AuthMode _authMode = AuthMode.Login;
   AuthMethods authMethod = AuthMethods();
   DataBaseMethods _dataBase = DataBaseMethods();
+
   Map<String, String> _authData = {
     'email': '',
-    'password': '',
     'userName': '',
-    'forgetPassword': '',
   };
+
   var _isLoading = false;
   final _passwordController = TextEditingController();
   final _emailController = TextEditingController();
   final _userNameController = TextEditingController();
   AnimationController _animationController;
   Animation<double> _opacityAnimation;
+  QuerySnapshot snapshotUserInfo;
 
   @override
   void initState() {
@@ -138,44 +142,46 @@ class _AuthCardState extends State<AuthCard>
       return;
     }
     _formKey.currentState.save();
+    HelperFunctions.saveUserEmailSharedPreference(_emailController.text);
+    HelperFunctions.saveUserEmailSharedPreference(_userNameController.text);
     setState(() {
       _isLoading = true;
     });
-    // _authMode == AuthMode.SignUp
-    //     ? authMethod.signUpWithEmailAndPassword(
-    //         __emailController.text,
-    //         _passwordController.text,
-    //       )
-    //     : authMethod.signInWithEmailAndPassword(
-    //         __emailController.text,
-    //         _passwordController.text,
-    //       );
     try {
       if (_authMode == AuthMode.SignUp) {
-        // Provider.of<Auth>(context, listen: false)
-        //     .signIn(_authData['email'], _authData['password']);
-        authMethod.signUpWithEmailAndPassword(
-          _authData['email'],
-          _authData['userName'],
-        );
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (ctx) => ChatRoom()),
-        );
-      } else {
-        // Provider.of<Auth>(context, listen: false)
-        //     .signUp(_authData['email'], _authData['password']);
-        authMethod.signInWithEmailAndPassword(
-          _authData['email'],
-         _authData['userName'],
-        ).then((value) {
+        authMethod
+            .signUpWithEmailAndPassword(
+          _emailController.text,
+          _userNameController.text,
+        )
+            .then((value) {
           _dataBase.uploadUserInfo(_authData);
+          HelperFunctions.saveUserLoggedInSharedPreference(true);
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(builder: (ctx) => ChatRoom()),
           );
         });
-
+      } else {
+        QuerySnapshot result =
+        _dataBase.getUserByUserEmail(_emailController.text);
+        snapshotUserInfo = result;
+        HelperFunctions.saveUserNameSharedPreference(
+            snapshotUserInfo.docs[0].data()['userName']);
+        authMethod
+            .signInWithEmailAndPassword(
+          _emailController.text,
+          _userNameController.text,
+        )
+            .then((val) {
+          if (_authData != null) {
+            HelperFunctions.saveUserLoggedInSharedPreference(true);
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (ctx) => ChatRoom()),
+            );
+          }
+        });
       }
     } on HttpException catch (error) {
       var errorMessage = 'Authentication failed';
@@ -317,9 +323,9 @@ class _AuthCardState extends State<AuthCard>
                             ? 'Password is too short!'
                             : null;
                       },
-                      onSaved: (value) {
-                        _authData['password'] = value;
-                      },
+                      // onSaved: (value) {
+                      //   _authData['password'] = value;
+                      // },
                     ),
                     SizedBox(height: 10),
                     if (_authMode == AuthMode.Login)
