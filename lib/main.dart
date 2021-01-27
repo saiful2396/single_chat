@@ -19,19 +19,22 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  bool isLoggedIn = false;
+  bool userIsLoggedIn;
+
   @override
   void initState() {
     getLoggedInState();
     super.initState();
   }
+
   getLoggedInState() async {
     await HelperFunctions.getUserLoggedInSharedPreference().then((value) {
       setState(() {
-        isLoggedIn = value;
+        userIsLoggedIn = value;
       });
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -54,7 +57,15 @@ class _MyAppState extends State<MyApp> {
               ),
             ),
       ),
-      home: isLoggedIn ? ChatRoom() : LoginScreen(),
+      home: userIsLoggedIn != null
+          ? userIsLoggedIn
+              ? ChatRoom()
+              : LoginScreen()
+          : Container(
+              child: Center(
+                child: LoginScreen(),
+              ),
+            ),
     );
   }
 }

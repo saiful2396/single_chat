@@ -1,7 +1,8 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:single_chat/helper/helper_function.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import '../helper/helper_function.dart';
 import '../services/auth_methods.dart';
 import '../services/database.dart';
 import '../models/http_exception.dart';
@@ -81,11 +82,6 @@ class _AuthCardState extends State<AuthCard>
   AuthMethods authMethod = AuthMethods();
   DataBaseMethods _dataBase = DataBaseMethods();
 
-  Map<String, String> _authData = {
-    'email': '',
-    'userName': '',
-  };
-
   var _isLoading = false;
   final _passwordController = TextEditingController();
   final _emailController = TextEditingController();
@@ -142,40 +138,50 @@ class _AuthCardState extends State<AuthCard>
       return;
     }
     _formKey.currentState.save();
-    HelperFunctions.saveUserEmailSharedPreference(_emailController.text);
-    HelperFunctions.saveUserEmailSharedPreference(_userNameController.text);
     setState(() {
       _isLoading = true;
     });
     try {
       if (_authMode == AuthMode.SignUp) {
-        authMethod
+        await authMethod
             .signUpWithEmailAndPassword(
           _emailController.text,
           _userNameController.text,
         )
             .then((value) {
-          _dataBase.uploadUserInfo(_authData);
-          HelperFunctions.saveUserLoggedInSharedPreference(true);
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (ctx) => ChatRoom()),
-          );
+              if(value != null){
+                Map<String, String> _authData = {
+                  'email': _userNameController.text,
+                  'userName': _emailController.text,
+                };
+                _dataBase.addUserInfo(_authData);
+                HelperFunctions.saveUserLoggedInSharedPreference(true);
+                HelperFunctions.saveUserNameSharedPreference(
+                    _userNameController.text);
+                HelperFunctions.saveUserEmailSharedPreference(_emailController.text);
+
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (ctx) => ChatRoom()),
+                );
+              }
         });
       } else {
-        QuerySnapshot result =
-        _dataBase.getUserByUserEmail(_emailController.text);
-        snapshotUserInfo = result;
-        HelperFunctions.saveUserNameSharedPreference(
-            snapshotUserInfo.docs[0].data()['userName']);
-        authMethod
+        await authMethod
             .signInWithEmailAndPassword(
           _emailController.text,
           _userNameController.text,
         )
-            .then((val) {
-          if (_authData != null) {
+            .then((val) async {
+          if (val != null) {
+            QuerySnapshot userInfoSnapshot =
+                await _dataBase.getUserInfo(_emailController.text);
+
             HelperFunctions.saveUserLoggedInSharedPreference(true);
+            HelperFunctions.saveUserNameSharedPreference(
+                userInfoSnapshot.docs[0].data()['userName']);
+            HelperFunctions.saveUserEmailSharedPreference(
+                userInfoSnapshot.docs[0].data()['email']);
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (ctx) => ChatRoom()),
@@ -271,9 +277,6 @@ class _AuthCardState extends State<AuthCard>
                               ? 'Invalid userName!'
                               : null;
                         },
-                        onSaved: (value) {
-                          _authData['userName'] = value;
-                        },
                       ),
                     SizedBox(height: 10),
                     TextFormField(
@@ -298,9 +301,6 @@ class _AuthCardState extends State<AuthCard>
                             ? null
                             : "Please enter correct email";
                       },
-                      onSaved: (value) {
-                        _authData['email'] = value;
-                      },
                     ),
                     SizedBox(height: 10),
                     TextFormField(
@@ -323,9 +323,6 @@ class _AuthCardState extends State<AuthCard>
                             ? 'Password is too short!'
                             : null;
                       },
-                      // onSaved: (value) {
-                      //   _authData['password'] = value;
-                      // },
                     ),
                     SizedBox(height: 10),
                     if (_authMode == AuthMode.Login)

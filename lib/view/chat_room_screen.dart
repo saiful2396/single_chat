@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:single_chat/helper/constant.dart';
-import 'package:single_chat/helper/helper_function.dart';
+import 'package:single_chat/services/database.dart';
 
-import '../view/auth_screen.dart';
+import '../helper/constant.dart';
+import '../helper/helper_function.dart';
 import '../services/auth_methods.dart';
+import '../view/auth_screen.dart';
 import '../view/search.dart';
 
 class ChatRoom extends StatefulWidget {
@@ -12,17 +13,47 @@ class ChatRoom extends StatefulWidget {
 }
 
 class _ChatRoomState extends State<ChatRoom> {
+  Stream chatRooms;
   AuthMethods _authMethods = AuthMethods();
 
   @override
   void initState() {
-    getUserInfo();
+    getUserInfoChat();
     super.initState();
   }
 
-  getUserInfo() async {
+  getUserInfoChat() async {
     Constants.myName = await HelperFunctions.getUserNameSharedPreference();
+    DataBaseMethods().getUserChats(Constants.myName).then((snapshots) {
+      setState(() {
+        chatRooms = snapshots;
+        print(
+            "we got the data + ${chatRooms.toString()} this is name  ${Constants.myName}");
+      });
+    });
   }
+
+  // Widget chatRoomsList() {
+  //   return StreamBuilder(
+  //     stream: chatRooms,
+  //     builder: (context, snapshot) {
+  //       return snapshot.hasData
+  //           ? ListView.builder(
+  //           itemCount: snapshot.data.documents.length,
+  //           shrinkWrap: true,
+  //           itemBuilder: (context, index) {
+  //             return ChatRoomsTile(
+  //               userName: snapshot.data.documents[index].data['chatRoomId']
+  //                   .toString()
+  //                   .replaceAll("_", "")
+  //                   .replaceAll(Constants.myName, ""),
+  //               chatRoomId: snapshot.data.documents[index].data["chatRoomId"],
+  //             );
+  //           })
+  //           : Container();
+  //     },
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -64,3 +95,55 @@ class _ChatRoomState extends State<ChatRoom> {
     );
   }
 }
+
+// class ChatRoomsTile extends StatelessWidget {
+//   final String userName;
+//   final String chatRoomId;
+//
+//   ChatRoomsTile({this.userName,@required this.chatRoomId});
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return GestureDetector(
+//       onTap: (){
+//         Navigator.push(context, MaterialPageRoute(
+//             builder: (context) => Chat(
+//               chatRoomId: chatRoomId,
+//             )
+//         ));
+//       },
+//       child: Container(
+//         color: Colors.black26,
+//         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+//         child: Row(
+//           children: [
+//             Container(
+//               height: 30,
+//               width: 30,
+//               decoration: BoxDecoration(
+//                   color: CustomTheme.colorAccent,
+//                   borderRadius: BorderRadius.circular(30)),
+//               child: Text(userName.substring(0, 1),
+//                   textAlign: TextAlign.center,
+//                   style: TextStyle(
+//                       color: Colors.white,
+//                       fontSize: 16,
+//                       fontFamily: 'OverpassRegular',
+//                       fontWeight: FontWeight.w300)),
+//             ),
+//             SizedBox(
+//               width: 12,
+//             ),
+//             Text(userName,
+//                 textAlign: TextAlign.start,
+//                 style: TextStyle(
+//                     color: Colors.white,
+//                     fontSize: 16,
+//                     fontFamily: 'OverpassRegular',
+//                     fontWeight: FontWeight.w300))
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+// }

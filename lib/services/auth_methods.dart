@@ -5,14 +5,10 @@ class AuthMethods {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   AppUser _authUser(User user) {
-    if (user != null) {
-      return AppUser(userId: user.uid);
-    } else {
-      return null;
-    }
+    return user != null ? AppUser(userId: user.uid) : null;
   }
 
-  Future<void> signInWithEmailAndPassword(String email, String password) async {
+  Future signInWithEmailAndPassword(String email, String password) async {
     try {
       UserCredential userCredential = await _auth.signInWithEmailAndPassword(
         email: email,
@@ -26,7 +22,7 @@ class AuthMethods {
     }
   }
 
-  Future<void> signUpWithEmailAndPassword(String email, String password) async {
+  Future signUpWithEmailAndPassword(String email, String password) async {
     try {
       UserCredential userCredential =
           await _auth.createUserWithEmailAndPassword(
@@ -49,7 +45,29 @@ class AuthMethods {
       return null;
     }
   }
-  Future<void> signOut() async {
+
+  // Future<User> signInWithGoogle(BuildContext context) async {
+  //   final GoogleSignIn _googleSignIn = new GoogleSignIn();
+  //
+  //   final GoogleSignInAccount googleSignInAccount =
+  //   await _googleSignIn.signIn();
+  //   final GoogleSignInAuthentication googleSignInAuthentication =
+  //   await googleSignInAccount.authentication;
+  //
+  //   final AuthCredential credential = GoogleAuthProvider.getCredential(
+  //       idToken: googleSignInAuthentication.idToken,
+  //       accessToken: googleSignInAuthentication.accessToken);
+  //
+  //   AuthResult result = await _auth.signInWithCredential(credential);
+  //   FirebaseUser userDetails = result.user;
+  //
+  //   if (result == null) {
+  //   } else {
+  //     Navigator.push(context, MaterialPageRoute(builder: (context) => Chat()));
+  //   }
+  // }
+
+  Future signOut() async {
     try {
       return await _auth.signOut();
     } catch (error) {

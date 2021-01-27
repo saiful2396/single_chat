@@ -12,49 +12,105 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  final _searchController = TextEditingController();
-  DataBaseMethods _dataBaseMethods = DataBaseMethods();
-  QuerySnapshot searchSnapshots;
+  DataBaseMethods databaseMethods = DataBaseMethods();
+  TextEditingController searchEditingController = TextEditingController();
+  QuerySnapshot searchResultSnapshot;
+
+  bool isLoading = false;
+  bool haveUserSearched = false;
 
   initiateSearch() async {
-    QuerySnapshot results =
-        await _dataBaseMethods.getUserByUserName(_searchController.text);
-    setState(() {
-      searchSnapshots = results;
-    });
-  }
-
-  createChatRoomAndConversation(String userName) {
-    if(userName != Constants.myName){
-      String chatRoomId = getChatRoomId(userName, Constants.myName);
-      List<String> users = [userName, Constants.myName];
-      Map<String, dynamic> chatRoomMap = {
-        'users': users,
-        'chatRoom': chatRoomId,
-      };
-      _dataBaseMethods.createChatRoom(chatRoomId, chatRoomMap);
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => ConversationScreen(),
-        ),
-      );
+    if (searchEditingController.text.isNotEmpty) {
+      setState(() {
+        isLoading = true;
+      });
+      await databaseMethods
+          .searchByName(searchEditingController.text)
+          .then((snapshot) {
+        searchResultSnapshot = snapshot;
+        print("$searchResultSnapshot");
+        setState(() {
+          isLoading = false;
+          haveUserSearched = true;
+        });
+      });
     }
   }
 
-  Widget searchList() {
-    return searchSnapshots != null
+  Widget userList() {
+    return haveUserSearched
         ? ListView.builder(
-            itemCount: searchSnapshots.docs.length,
             shrinkWrap: true,
-            itemBuilder: (context, i) {
-              return SearchTile(
-                email: searchSnapshots.docs[i].data()['email'],
-                userName: searchSnapshots.docs[i].data()['userName'],
-                conversation: createChatRoomAndConversation(searchSnapshots.docs[i].data()['userName'],),
+            itemCount: searchResultSnapshot.docs.length,
+            itemBuilder: (context, index) {
+              return userTile(
+                searchResultSnapshot.docs[index].data()["userName"],
+                searchResultSnapshot.docs[index].data()["email"],
               );
             })
         : Container();
+  }
+
+  /// 1.create a chatroom, send user to the chatroom, other userdetails
+  sendMessage(String userName) {
+    List<String> users = [Constants.myName, userName];
+
+    String chatRoomId = getChatRoomId(Constants.myName, userName);
+
+    Map<String, dynamic> chatRoom = {
+      "users": users,
+      "chatRoomId": chatRoomId,
+    };
+
+    databaseMethods.addChatRoom(chatRoom, chatRoomId);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ConversationScreen(
+            //chatRoomId: chatRoomId,
+            ),
+      ),
+    );
+  }
+
+  Widget userTile(String userName, String userEmail) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Row(
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                userName,
+                style: TextStyle(color: Colors.black, fontSize: 16),
+              ),
+              Text(
+                userEmail,
+                style: TextStyle(color: Colors.black45, fontSize: 16),
+              )
+            ],
+          ),
+          Spacer(),
+          GestureDetector(
+            onTap: () {
+              sendMessage(userName);
+            },
+            child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.circular(24)),
+              child: Text(
+                "Message",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+            ),
+          )
+        ],
+      ),
+    );
   }
 
   getChatRoomId(String a, String b) {
@@ -79,84 +135,63 @@ class _SearchScreenState extends State<SearchScreen> {
           style: Theme.of(context).textTheme.bodyText1,
         ),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Container(
-              color: Color(0x54FFFFFF),
-              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-              child: Row(
+      body: isLoading
+          ? Container(
+              child: Center(
+                child: CircularProgressIndicator(),
+              ),
+            )
+          : Container(
+              child: Column(
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: _searchController,
-                      style: TextStyle(color: Colors.black54),
-                      decoration: InputDecoration(
-                          hintText: 'Search userName...',
-                          border: InputBorder.none),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                    color: Color(0x54FFFFFF),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: searchEditingController,
+                            style: TextStyle(color: Colors.black54),
+                            decoration: InputDecoration(
+                                hintText: "search username ...",
+                                border: InputBorder.none),
+                          ),
+                        ),
+                        IconButton(
+                            icon: Icon(Icons.search),
+                            onPressed: () {
+                              initiateSearch();
+                            }),
+                        // GestureDetector(
+                        //   onTap: (){
+                        //     initiateSearch();
+                        //   },
+                        //   child: Container(
+                        //       height: 40,
+                        //       width: 40,
+                        //       decoration: BoxDecoration(
+                        //           gradient: LinearGradient(
+                        //               colors: [
+                        //                 const Color(0x36FFFFFF),
+                        //                 const Color(0x0FFFFFFF)
+                        //               ],
+                        //               begin: FractionalOffset.topLeft,
+                        //               end: FractionalOffset.bottomRight
+                        //           ),
+                        //           borderRadius: BorderRadius.circular(40)
+                        //       ),
+                        //       padding: EdgeInsets.all(12),
+                        //       child: Image.asset("assets/images/search_white.png",
+                        //         height: 25, width: 25,)),
+                        // )
+                      ],
                     ),
                   ),
-                  IconButton(
-                      icon: Icon(Icons.search),
-                      onPressed: () {
-                        initiateSearch();
-                      })
+                  userList()
                 ],
               ),
             ),
-            searchList(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class SearchTile extends StatelessWidget {
-  final String userName;
-  final String email;
-  final Function conversation;
-
-  SearchTile({this.email, this.userName, this.conversation});
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                userName,
-                style: Theme.of(context).textTheme.headline6,
-              ),
-              Text(
-                email,
-                style: TextStyle(
-                  color: Colors.grey,
-                  fontSize: 16,
-                ),
-              ),
-            ],
-          ),
-          Spacer(),
-          InkWell(
-            onTap: conversation,
-            child: Container(
-              padding: EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(15),
-                  color: Theme.of(context).primaryColor),
-              child: Text(
-                'Message',
-                style: Theme.of(context).textTheme.bodyText2,
-              ),
-            ),
-          ),
-        ],
-      ),
     );
   }
 }
