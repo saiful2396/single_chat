@@ -5,6 +5,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../helper/constant.dart';
 import '../services/database.dart';
 import '../view/conversation_screen.dart';
+import '../widget/my_app_bar.dart';
 
 class SearchScreen extends StatefulWidget {
   @override
@@ -129,11 +130,9 @@ class _SearchScreenState extends State<SearchScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          'Single Chat',
-          style: Theme.of(context).textTheme.bodyText1,
-        ),
+      appBar: PreferredSize(
+        preferredSize: Size.fromHeight(60),
+        child: MyAppBar('Single Chat'),
       ),
       body: isLoading
           ? Container(
@@ -159,32 +158,11 @@ class _SearchScreenState extends State<SearchScreen> {
                           ),
                         ),
                         IconButton(
-                            icon: Icon(Icons.search),
-                            onPressed: () {
-                              initiateSearch();
-                            }),
-                        // GestureDetector(
-                        //   onTap: (){
-                        //     initiateSearch();
-                        //   },
-                        //   child: Container(
-                        //       height: 40,
-                        //       width: 40,
-                        //       decoration: BoxDecoration(
-                        //           gradient: LinearGradient(
-                        //               colors: [
-                        //                 const Color(0x36FFFFFF),
-                        //                 const Color(0x0FFFFFFF)
-                        //               ],
-                        //               begin: FractionalOffset.topLeft,
-                        //               end: FractionalOffset.bottomRight
-                        //           ),
-                        //           borderRadius: BorderRadius.circular(40)
-                        //       ),
-                        //       padding: EdgeInsets.all(12),
-                        //       child: Image.asset("assets/images/search_white.png",
-                        //         height: 25, width: 25,)),
-                        // )
+                          icon: Icon(Icons.search),
+                          onPressed: () {
+                            initiateSearch();
+                          },
+                        ),
                       ],
                     ),
                   ),

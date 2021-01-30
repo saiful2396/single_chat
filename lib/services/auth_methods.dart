@@ -14,8 +14,8 @@ class AuthMethods {
         email: email,
         password: password,
       );
-      User _user = userCredential.user;
-      return _authUser(_user);
+      User user = userCredential.user;
+      return _authUser(user);
     } catch (error) {
       print(error.toString());
       return null;
@@ -29,8 +29,8 @@ class AuthMethods {
         email: email,
         password: password,
       );
-      User _user = userCredential.user;
-      return _authUser(_user);
+      User user = userCredential.user;
+      return _authUser(user);
     } catch (error) {
       print(error.toString());
       return null;

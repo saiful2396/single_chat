@@ -149,39 +149,40 @@ class _AuthCardState extends State<AuthCard>
           _userNameController.text,
         )
             .then((value) {
-              if(value != null){
-                Map<String, String> _authData = {
-                  'email': _userNameController.text,
-                  'userName': _emailController.text,
-                };
-                _dataBase.addUserInfo(_authData);
-                HelperFunctions.saveUserLoggedInSharedPreference(true);
-                HelperFunctions.saveUserNameSharedPreference(
-                    _userNameController.text);
-                HelperFunctions.saveUserEmailSharedPreference(_emailController.text);
+          if (value != null) {
+            Map<String, String> _authData = {
+              'email': _userNameController.text,
+              'userName': _emailController.text,
+            };
+            _dataBase.addUserInfo(_authData);
+            HelperFunctions.saveUserLoggedInSharedPreference(true);
+            HelperFunctions.saveUserNameSharedPreference(
+                _userNameController.text);
+            HelperFunctions.saveUserEmailSharedPreference(
+                _emailController.text);
 
-                Navigator.pushReplacement(
-                  context,
-                  MaterialPageRoute(builder: (ctx) => ChatRoom()),
-                );
-              }
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (ctx) => ChatRoom(),
+              ),
+            );
+          }
         });
       } else {
         await authMethod
             .signInWithEmailAndPassword(
-          _emailController.text,
-          _userNameController.text,
-        )
-            .then((val) async {
-          if (val != null) {
+            _emailController.text, _passwordController.text)
+            .then((result) async {
+          if (result != null)  {
             QuerySnapshot userInfoSnapshot =
-                await _dataBase.getUserInfo(_emailController.text);
+            await DataBaseMethods().getUserInfo(_emailController.text);
 
             HelperFunctions.saveUserLoggedInSharedPreference(true);
             HelperFunctions.saveUserNameSharedPreference(
-                userInfoSnapshot.docs[0].data()['userName']);
+                userInfoSnapshot.docs[0].data()["userName"]);
             HelperFunctions.saveUserEmailSharedPreference(
-                userInfoSnapshot.docs[0].data()['email']);
+                userInfoSnapshot.docs[0].data()["email"]);
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (ctx) => ChatRoom()),
