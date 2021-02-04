@@ -151,8 +151,8 @@ class _AuthCardState extends State<AuthCard>
             .then((value) {
           if (value != null) {
             Map<String, String> _authData = {
-              'email': _userNameController.text,
-              'userName': _emailController.text,
+              'userEmail': _emailController.text,
+              'userName': _userNameController.text,
             };
             _dataBase.addUserInfo(_authData);
             HelperFunctions.saveUserLoggedInSharedPreference(true);
@@ -182,7 +182,7 @@ class _AuthCardState extends State<AuthCard>
             HelperFunctions.saveUserNameSharedPreference(
                 userInfoSnapshot.docs[0].data()["userName"]);
             HelperFunctions.saveUserEmailSharedPreference(
-                userInfoSnapshot.docs[0].data()["email"]);
+                userInfoSnapshot.docs[0].data()["userEmail"]);
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(builder: (ctx) => ChatRoom()),
