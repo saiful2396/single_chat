@@ -32,29 +32,6 @@ class _ChatRoomState extends State<ChatRoom> {
       });
     });
   }
-
-  // Widget chatRoomsList() {
-  //   return StreamBuilder(
-  //     stream: chatRooms,
-  //     builder: (context, snapshot) {
-  //       return snapshot.hasData
-  //           ? ListView.builder(
-  //           itemCount: snapshot.data.documents.length,
-  //           shrinkWrap: true,
-  //           itemBuilder: (context, index) {
-  //             return ChatRoomsTile(
-  //               userName: snapshot.data.documents[index].data['chatRoomId']
-  //                   .toString()
-  //                   .replaceAll("_", "")
-  //                   .replaceAll(Constants.myName, ""),
-  //               chatRoomId: snapshot.data.documents[index].data["chatRoomId"],
-  //             );
-  //           })
-  //           : Container();
-  //     },
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -76,9 +53,6 @@ class _ChatRoomState extends State<ChatRoom> {
                 );
               })
         ],
-      ),
-      body: Center(
-        child: Text('Chat'),
       ),
       floatingActionButton: FloatingActionButton(
         child: Icon(Icons.search),

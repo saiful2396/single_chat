@@ -46,14 +46,14 @@ class _SearchScreenState extends State<SearchScreen> {
             itemBuilder: (context, index) {
               return userTile(
                 searchResultSnapshot.docs[index].data()["userName"],
-                searchResultSnapshot.docs[index].data()["email"],
+                searchResultSnapshot.docs[index].data()["userEmail"],
               );
             })
         : Container();
   }
 
   /// 1.create a chatroom, send user to the chatroom, other userdetails
-  sendMessage(String userName) {
+  sendMessage(String userName) async {
     List<String> users = [Constants.myName, userName];
 
     String chatRoomId = getChatRoomId(Constants.myName, userName);
@@ -63,14 +63,12 @@ class _SearchScreenState extends State<SearchScreen> {
       "chatRoomId": chatRoomId,
     };
 
-    databaseMethods.addChatRoom(chatRoom, chatRoomId);
+    await databaseMethods.addChatRoom(chatRoom, chatRoomId);
 
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => ConversationScreen(
-            //chatRoomId: chatRoomId,
-            ),
+        builder: (context) => ConversationScreen(chatRoomId: chatRoomId),
       ),
     );
   }
@@ -101,8 +99,9 @@ class _SearchScreenState extends State<SearchScreen> {
             child: Container(
               padding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
               decoration: BoxDecoration(
-                  color: Theme.of(context).primaryColor,
-                  borderRadius: BorderRadius.circular(24)),
+                color: Theme.of(context).primaryColor,
+                borderRadius: BorderRadius.circular(24),
+              ),
               child: Text(
                 "Message",
                 style: TextStyle(color: Colors.white, fontSize: 16),
@@ -145,23 +144,46 @@ class _SearchScreenState extends State<SearchScreen> {
                 children: [
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    color: Color(0x54FFFFFF),
+                    color: Colors.black45,
                     child: Row(
                       children: [
                         Expanded(
                           child: TextField(
                             controller: searchEditingController,
-                            style: TextStyle(color: Colors.black54),
+                            style: TextStyle(color: Colors.white60),
                             decoration: InputDecoration(
                                 hintText: "search username ...",
-                                border: InputBorder.none),
+                                hintStyle: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                                border: InputBorder.none
+                            ),
                           ),
                         ),
-                        IconButton(
-                          icon: Icon(Icons.search),
-                          onPressed: () {
+                        GestureDetector(
+                          onTap: () {
                             initiateSearch();
                           },
+                          child: Container(
+                            height: 40,
+                            width: 40,
+                            decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                    colors: [
+                                      const Color(0x36FFFFFF),
+                                      const Color(0x0FFFFFFF)
+                                    ],
+                                    begin: FractionalOffset.topLeft,
+                                    end: FractionalOffset.bottomRight),
+                                borderRadius: BorderRadius.circular(40)),
+                            padding: EdgeInsets.all(12),
+                            child: Image.asset(
+                              "assets/images/search_white.png",
+                              height: 25,
+                              width: 25,
+                            ),
+                          ),
                         ),
                       ],
                     ),

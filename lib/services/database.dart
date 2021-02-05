@@ -1,8 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class DataBaseMethods {
-  Future<void> addUserInfo(userData) {
-    return FirebaseFirestore.instance
+  addUserInfo(userData) {
+    FirebaseFirestore.instance
         .collection('users')
         .add(userData)
         .catchError((e) {
@@ -11,7 +11,7 @@ class DataBaseMethods {
   }
 
   getUserInfo(String email) async {
-    return FirebaseFirestore.instance
+    return await FirebaseFirestore.instance
         .collection("users")
         .where("userEmail", isEqualTo: email)
         .get()
@@ -20,15 +20,15 @@ class DataBaseMethods {
     });
   }
 
-  searchByName(String searchField) {
-    return FirebaseFirestore.instance
+  searchByName(String searchField) async {
+    return await FirebaseFirestore.instance
         .collection("users")
         .where('userName', isEqualTo: searchField)
         .get();
   }
 
-  Future<bool> addChatRoom(chatRoom, chatRoomId) {
-    return FirebaseFirestore.instance
+  addChatRoom(chatRoom, String chatRoomId) {
+    FirebaseFirestore.instance
         .collection("chatRoom")
         .doc(chatRoomId)
         .set(chatRoom)
@@ -37,7 +37,7 @@ class DataBaseMethods {
     });
   }
 
-  getChats(String chatRoomId) async{
+  getChats(String chatRoomId) async {
     return FirebaseFirestore.instance
         .collection("chatRoom")
         .doc(chatRoomId)
@@ -46,12 +46,13 @@ class DataBaseMethods {
         .snapshots();
   }
 
-  Future<void> addMessage(String chatRoomId, chatMessageData){
-
-    return FirebaseFirestore.instance.collection("chatRoom")
+  addMessage(String chatRoomId, chatMessageData) {
+    FirebaseFirestore.instance
+        .collection("chatRoom")
         .doc(chatRoomId)
         .collection("chats")
-        .add(chatMessageData).catchError((e){
+        .add(chatMessageData)
+        .catchError((e) {
       print(e.toString());
     });
   }
@@ -63,17 +64,17 @@ class DataBaseMethods {
         .snapshots();
   }
 
-  // uploadUserInfo(userMap) {
-  //   FirebaseFirestore.instance.collection('users').add(userMap);
-  // }
-  //
-  // createChatRoom(String chatRoomId, chatRoomMap) {
-  //   FirebaseFirestore.instance
-  //       .collection('chatRoom')
-  //       .doc(chatRoomId)
-  //       .set(chatRoomMap)
-  //       .catchError((e) {
-  //     print(e.toString());
-  //   });
-  // }
+// uploadUserInfo(userMap) {
+//   FirebaseFirestore.instance.collection('users').add(userMap);
+// }
+//
+// createChatRoom(String chatRoomId, chatRoomMap) {
+//   FirebaseFirestore.instance
+//       .collection('chatRoom')
+//       .doc(chatRoomId)
+//       .set(chatRoomMap)
+//       .catchError((e) {
+//     print(e.toString());
+//   });
+// }
 }

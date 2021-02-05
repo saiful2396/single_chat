@@ -34,6 +34,10 @@ flutter:
       fonts:
         - asset: assets/fonts/BungeeInline-Regular.ttf
           weight: 700
+    - family: OverpassRegular
+      fonts:
+        - asset: assets/fonts/overpass_regular.otf
+          weight: 700
 #    - family: Ubuntu
 #      fonts:
 #        - asset: assets/fonts/Ubuntu-Regular.ttf
