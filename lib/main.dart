@@ -39,7 +39,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Flutter Demo',
+      title: 'Single Chat',
       theme: ThemeData(
         primaryColor: Color(0xFFFF75431),
         visualDensity: VisualDensity.adaptivePlatformDensity,

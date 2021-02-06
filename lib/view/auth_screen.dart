@@ -7,6 +7,7 @@ import '../services/auth_methods.dart';
 import '../services/database.dart';
 import '../models/http_exception.dart';
 import '../view/chat_room_screen.dart';
+import '../view/forget_password.dart';
 
 enum AuthMode { SignUp, Login }
 
@@ -146,7 +147,7 @@ class _AuthCardState extends State<AuthCard>
         await authMethod
             .signUpWithEmailAndPassword(
           _emailController.text,
-          _userNameController.text,
+          _passwordController.text,
         )
             .then((value) {
           if (value != null) {
@@ -172,11 +173,11 @@ class _AuthCardState extends State<AuthCard>
       } else {
         await authMethod
             .signInWithEmailAndPassword(
-            _emailController.text, _passwordController.text)
+                _emailController.text, _passwordController.text)
             .then((result) async {
-          if (result != null)  {
+          if (result != null) {
             QuerySnapshot userInfoSnapshot =
-            await DataBaseMethods().getUserInfo(_emailController.text);
+                await DataBaseMethods().getUserInfo(_emailController.text);
 
             HelperFunctions.saveUserLoggedInSharedPreference(true);
             HelperFunctions.saveUserNameSharedPreference(
@@ -326,12 +327,25 @@ class _AuthCardState extends State<AuthCard>
                       },
                     ),
                     SizedBox(height: 10),
-                    if (_authMode == AuthMode.Login)
-                      Container(
+                    if(_authMode == AuthMode.Login)
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ForgotPassword(),
+                          ),
+                        );
+                      },
+                      child: Container(
                         alignment: Alignment.centerRight,
-                        child: Text('Forget Password?'),
+                        child: Text(
+                          'Forget Password?',
+                          style: TextStyle(color: Colors.black),
+                        ),
                       ),
-                    SizedBox(height: 10),
+                    ),
+
                     if (_authMode == AuthMode.SignUp)
                       FadeTransition(
                         opacity: _opacityAnimation,
@@ -380,10 +394,8 @@ class _AuthCardState extends State<AuthCard>
                       child: Text(_authMode == AuthMode.Login
                           ? 'SignIn with Google'
                           : 'SIGN UP with Google'),
-                      //onPressed: _submit,
                       onPressed: () {
-                        // Navigator.of(context)
-                        //     .pushReplacementNamed(HomeScreen.routeName);
+                        AuthMethods().signInWithGoogle(context);
                       },
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(30),

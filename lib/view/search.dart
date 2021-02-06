@@ -13,40 +13,40 @@ class SearchScreen extends StatefulWidget {
 }
 
 class _SearchScreenState extends State<SearchScreen> {
-  DataBaseMethods databaseMethods = DataBaseMethods();
-  TextEditingController searchEditingController = TextEditingController();
-  QuerySnapshot searchResultSnapshot;
+  DataBaseMethods _databaseMethods = DataBaseMethods();
+  final _searchEditingController = TextEditingController();
+  QuerySnapshot _searchResultSnapshot;
 
-  bool isLoading = false;
-  bool haveUserSearched = false;
+  bool _isLoading = false;
+  bool _haveUserSearched = false;
 
   initiateSearch() async {
-    if (searchEditingController.text.isNotEmpty) {
+    if (_searchEditingController.text.isNotEmpty) {
       setState(() {
-        isLoading = true;
+        _isLoading = true;
       });
-      await databaseMethods
-          .searchByName(searchEditingController.text)
+      await _databaseMethods
+          .searchByName(_searchEditingController.text)
           .then((snapshot) {
-        searchResultSnapshot = snapshot;
-        print("$searchResultSnapshot");
+        _searchResultSnapshot = snapshot;
+        print("$_searchResultSnapshot");
         setState(() {
-          isLoading = false;
-          haveUserSearched = true;
+          _isLoading = false;
+          _haveUserSearched = true;
         });
       });
     }
   }
 
   Widget userList() {
-    return haveUserSearched
+    return _haveUserSearched
         ? ListView.builder(
             shrinkWrap: true,
-            itemCount: searchResultSnapshot.docs.length,
+            itemCount: _searchResultSnapshot.docs.length,
             itemBuilder: (context, index) {
               return userTile(
-                searchResultSnapshot.docs[index].data()["userName"],
-                searchResultSnapshot.docs[index].data()["userEmail"],
+                _searchResultSnapshot.docs[index].data()["userName"],
+                _searchResultSnapshot.docs[index].data()["userEmail"],
               );
             })
         : Container();
@@ -63,7 +63,7 @@ class _SearchScreenState extends State<SearchScreen> {
       "chatRoomId": chatRoomId,
     };
 
-    await databaseMethods.addChatRoom(chatRoom, chatRoomId);
+    await _databaseMethods.addChatRoom(chatRoom, chatRoomId);
 
     Navigator.push(
       context,
@@ -133,7 +133,7 @@ class _SearchScreenState extends State<SearchScreen> {
         preferredSize: Size.fromHeight(60),
         child: MyAppBar('Single Chat'),
       ),
-      body: isLoading
+      body: _isLoading
           ? Container(
               child: Center(
                 child: CircularProgressIndicator(),
@@ -143,22 +143,21 @@ class _SearchScreenState extends State<SearchScreen> {
               child: Column(
                 children: [
                   Container(
-                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                    color: Colors.black45,
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                    color: Theme.of(context).primaryColor,
                     child: Row(
                       children: [
                         Expanded(
                           child: TextField(
-                            controller: searchEditingController,
-                            style: TextStyle(color: Colors.white60),
+                            controller: _searchEditingController,
+                            style: TextStyle(color: Colors.white),
                             decoration: InputDecoration(
                                 hintText: "search username ...",
                                 hintStyle: TextStyle(
                                   color: Colors.white,
                                   fontSize: 16,
                                 ),
-                                border: InputBorder.none
-                            ),
+                                border: InputBorder.none),
                           ),
                         ),
                         GestureDetector(

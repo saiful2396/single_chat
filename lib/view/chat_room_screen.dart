@@ -37,7 +37,9 @@ class _ChatRoomState extends State<ChatRoom> {
                   );
                 },
               )
-            : Container();
+            : Center(
+                child: Text('Find and chat with your friend'),
+              );
       },
     );
   }
@@ -111,43 +113,47 @@ class ChatRoomsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: ListTile(
-        leading: CircleAvatar(
-          backgroundColor: Theme.of(context).primaryColor,
-          child: Text(
-            userName.substring(0, 1),
+      elevation: 5,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: ListTile(
+          leading: CircleAvatar(
+            backgroundColor: Theme.of(context).primaryColor,
+            child: Text(
+              userName.substring(0, 1),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 16,
+                fontFamily: 'OverpassRegular',
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+          ),
+          title: Text(
+            userName,
             style: TextStyle(
-              color: Colors.white,
+              color: Colors.black,
               fontSize: 16,
               fontFamily: 'OverpassRegular',
               fontWeight: FontWeight.w300,
             ),
           ),
-        ),
-        title: Text(
-          userName,
-          style: TextStyle(
-            color: Colors.black,
-            fontSize: 16,
-            fontFamily: 'OverpassRegular',
-            fontWeight: FontWeight.w300,
-          ),
-        ),
-        trailing: IconButton(
-          icon: Icon(
-            Icons.chat,
-            color: Theme.of(context).primaryColor,
-          ),
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ConversationScreen(
-                  chatRoomId: chatRoomId,
+          trailing: IconButton(
+            icon: Icon(
+              Icons.chat,
+              color: Theme.of(context).primaryColor,
+            ),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ConversationScreen(
+                    chatRoomId: chatRoomId,
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
