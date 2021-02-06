@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:single_chat/services/database.dart';
 
 import '../helper/constant.dart';
 import '../helper/helper_function.dart';
 import '../services/auth_methods.dart';
+import '../services/database.dart';
 import '../view/auth_screen.dart';
 import '../view/search.dart';
+import '../view/conversation_screen.dart';
 
 class ChatRoom extends StatefulWidget {
   @override
@@ -14,15 +15,40 @@ class ChatRoom extends StatefulWidget {
 
 class _ChatRoomState extends State<ChatRoom> {
   Stream chatRooms;
-  AuthMethods _authMethods = AuthMethods();
+
+  Widget chatRoomsList() {
+    return StreamBuilder(
+      stream: chatRooms,
+      builder: (context, snapshot) {
+        return snapshot.hasData
+            ? ListView.builder(
+                padding: EdgeInsets.all(10),
+                shrinkWrap: true,
+                physics: ScrollPhysics(),
+                itemCount: snapshot.data.docs.length,
+                itemBuilder: (context, index) {
+                  return ChatRoomsTile(
+                    userName: snapshot.data.docs[index]
+                        .data()["chatRoomId"]
+                        .toString()
+                        .replaceAll("_", "")
+                        .replaceAll(Constants.myName, ""),
+                    chatRoomId: snapshot.data.docs[index].data()["chatRoomId"],
+                  );
+                },
+              )
+            : Container();
+      },
+    );
+  }
 
   @override
   void initState() {
-    getUserInfoChat();
+    getUserInfoGetChats();
     super.initState();
   }
 
-  getUserInfoChat() async {
+  getUserInfoGetChats() async {
     Constants.myName = await HelperFunctions.getUserNameSharedPreference();
     DataBaseMethods().getUserChats(Constants.myName).then((snapshots) {
       setState(() {
@@ -32,6 +58,7 @@ class _ChatRoomState extends State<ChatRoom> {
       });
     });
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,11 +67,13 @@ class _ChatRoomState extends State<ChatRoom> {
           'Single Chat',
           style: Theme.of(context).textTheme.bodyText1,
         ),
+        elevation: 0.0,
+        centerTitle: false,
         actions: [
           IconButton(
               icon: Icon(Icons.exit_to_app),
               onPressed: () {
-                _authMethods.signOut();
+                AuthMethods().signOut();
                 Navigator.pushReplacement(
                   context,
                   MaterialPageRoute(
@@ -54,70 +83,73 @@ class _ChatRoomState extends State<ChatRoom> {
               })
         ],
       ),
+      body: Container(
+        child: chatRoomsList(),
+      ),
       floatingActionButton: FloatingActionButton(
-        child: Icon(Icons.search),
+        backgroundColor: Theme.of(context).primaryColor,
+        child: Icon(Icons.search, color: Colors.white),
         onPressed: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (ctx) => SearchScreen(),
+              builder: (context) => SearchScreen(),
             ),
           );
         },
-        backgroundColor: Theme.of(context).primaryColor,
       ),
     );
   }
 }
 
-// class ChatRoomsTile extends StatelessWidget {
-//   final String userName;
-//   final String chatRoomId;
-//
-//   ChatRoomsTile({this.userName,@required this.chatRoomId});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return GestureDetector(
-//       onTap: (){
-//         Navigator.push(context, MaterialPageRoute(
-//             builder: (context) => Chat(
-//               chatRoomId: chatRoomId,
-//             )
-//         ));
-//       },
-//       child: Container(
-//         color: Colors.black26,
-//         padding: EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-//         child: Row(
-//           children: [
-//             Container(
-//               height: 30,
-//               width: 30,
-//               decoration: BoxDecoration(
-//                   color: CustomTheme.colorAccent,
-//                   borderRadius: BorderRadius.circular(30)),
-//               child: Text(userName.substring(0, 1),
-//                   textAlign: TextAlign.center,
-//                   style: TextStyle(
-//                       color: Colors.white,
-//                       fontSize: 16,
-//                       fontFamily: 'OverpassRegular',
-//                       fontWeight: FontWeight.w300)),
-//             ),
-//             SizedBox(
-//               width: 12,
-//             ),
-//             Text(userName,
-//                 textAlign: TextAlign.start,
-//                 style: TextStyle(
-//                     color: Colors.white,
-//                     fontSize: 16,
-//                     fontFamily: 'OverpassRegular',
-//                     fontWeight: FontWeight.w300))
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-// }
+class ChatRoomsTile extends StatelessWidget {
+  final String userName;
+  final String chatRoomId;
+
+  ChatRoomsTile({this.userName, @required this.chatRoomId});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: Theme.of(context).primaryColor,
+          child: Text(
+            userName.substring(0, 1),
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 16,
+              fontFamily: 'OverpassRegular',
+              fontWeight: FontWeight.w300,
+            ),
+          ),
+        ),
+        title: Text(
+          userName,
+          style: TextStyle(
+            color: Colors.black,
+            fontSize: 16,
+            fontFamily: 'OverpassRegular',
+            fontWeight: FontWeight.w300,
+          ),
+        ),
+        trailing: IconButton(
+          icon: Icon(
+            Icons.chat,
+            color: Theme.of(context).primaryColor,
+          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ConversationScreen(
+                  chatRoomId: chatRoomId,
+                ),
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+}

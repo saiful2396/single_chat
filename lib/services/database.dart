@@ -57,24 +57,10 @@ class DataBaseMethods {
     });
   }
 
-  getUserChats(String itIsMyName) {
+  getUserChats(String itIsMyName) async {
     return FirebaseFirestore.instance
         .collection("chatRoom")
         .where('users', arrayContains: itIsMyName)
         .snapshots();
   }
-
-// uploadUserInfo(userMap) {
-//   FirebaseFirestore.instance.collection('users').add(userMap);
-// }
-//
-// createChatRoom(String chatRoomId, chatRoomMap) {
-//   FirebaseFirestore.instance
-//       .collection('chatRoom')
-//       .doc(chatRoomId)
-//       .set(chatRoomMap)
-//       .catchError((e) {
-//     print(e.toString());
-//   });
-// }
 }
